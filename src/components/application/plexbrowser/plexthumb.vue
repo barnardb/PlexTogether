@@ -1,5 +1,5 @@
 <template>
-  <div class="portrait" ref="root" style="cursor: pointer">
+  <div class="portrait" ref="root" style="cursor: pointer" v-observe-visibility="amVisible">
     <v-card data-tilt v-on:click="emitContentClicked(content)" class="grey darken-4" :img="getImg(content)" :height="calculatedHeight">                       
         <div class="pt-content-unwatched pt-orange unwatched" v-if="showUnwatchedFlag"> 
             <span class="pa-2 black--text">
@@ -33,7 +33,7 @@
 
   export default {
 
-    props: ['library', 'showServer', 'content', 'type', 'server', 'height', 'fullTitle', 'search', 'locked'],
+    props: ['library', 'showServer', 'content', 'type', 'server', 'height', 'fullTitle', 'search', 'locked', 'index'],
     components: {
     },
     created () {
@@ -81,6 +81,9 @@
         return this.$store.getters.getPlex
       },
       showUnwatchedFlag (){
+        if (!this.content){
+          return false
+        }
         if (this.content.type == 'movie' || this.content.type == 'episode'){
           if ( (!this.content.viewCount || this.content.viewCount == 0) && !this.showProgressBar){
             return true
@@ -101,7 +104,7 @@
         }
         return {'font-size':size + 'px'}
       },      
-      fontSizeBottom () {       
+      fontSizeBottom () {        
         let size = (this.bottomtextheight * 0.7)
         if (size > 16){
           size = 16
@@ -111,6 +114,9 @@
       fullCalculatedHeightRaw (){
         if (this.height){
           return this.height
+        }
+        if (!this.content){          
+          return Math.round(this.fullwidth * 1.5)
         }
         if (this.content.type == 'movie'){
           return Math.round(this.fullwidth * 1.5)
@@ -123,6 +129,9 @@
       fakeRowHeight (){        
         if (this.height){
           return Math.round(this.height * 0.78) + 'em' 
+        }        
+        if (!this.content){          
+          return Math.round(this.fullwidth * 1.5 * 0.78) + 'px'
         }
         if (this.content.type == 'movie'){
           return Math.round(this.fullwidth * 1.5 * 0.78) + 'px'
@@ -135,6 +144,9 @@
       calculatedHeight (){
         if (this.height){
           return this.height + 'em'
+        }        
+        if (!this.content){          
+          return Math.round(this.fullwidth * 1.5) + 'px'
         }
         if (this.content.type == 'movie'){
           return Math.round(this.fullwidth * 1.5) + 'px'
@@ -147,6 +159,9 @@
       bottomCalculatedHeight (){
         if (this.height){
           return Math.round(this.height * 0.22) + 'em'
+        }        
+        if (!this.content){          
+          return Math.round(this.fullwidth * 1.5 * 0.22) + 'px'
         }
         if (this.content.type == 'movie'){
           return Math.round((this.fullwidth * 1.5) * 0.22) + 'px'
@@ -157,6 +172,9 @@
         return Math.round(this.fullwidth * 1.5 * 0.22) + 'px'
       },
       showProgressBar (){
+        if (!this.content){
+          return false
+        }
         if (this.content.type == 'movie' || this.content.type == 'episode'){
           if (this.content.viewOffset && this.content.viewOffset > 0){
             return true
@@ -170,7 +188,10 @@
           return false
         }
       },
-      unwatched (){
+      unwatched (){        
+        if (!this.content){
+          return false
+        }
         if (this.content.type == 'movie' || this.content.type == 'episode'){
           if (this.content.viewCount && this.content.viewCount > 0){
             return false
@@ -180,6 +201,9 @@
       },
       unfinished (){
         // Lol
+        if (!this.content){
+          return false
+        }
         if (this.content.type == 'movie' || this.content.type == 'episode'){
           if (!this.content.viewCount || this.content.viewCount == 0){
             if (this.content.viewOffset == 0 || this.content.viewOffset == undefined){
@@ -200,13 +224,19 @@
         }
 
       },
-      unwatchedCount (){
+      unwatchedCount (){        
+        if (!this.content){
+          return ''
+        }
         if (this.content.type == 'show' || this.content.type == 'season'){
           return (this.content.leafCount - this.content.viewedLeafCount)
         }
         return ''
       },
       unwatchedPercent (){
+        if (!this.content){
+          return ''
+        }
         if (this.content.type == 'movie' || this.content.type == 'episode'){
           return this.content.duration / this.content.viewOffset
         } else {
@@ -218,7 +248,15 @@
       emitContentClicked (content) {
         this.$emit('contentSet',content)
       },
+      amVisible (){
+        if (!this.content){
+          this.$emit('amVisible',this.index)
+        }
+      },
       getTitle(content){
+        if (!this.content){
+          return 'Loading..'
+        }
         switch (content.type){
           case 'movie':
             if (this.fullTitle != undefined){   
@@ -243,7 +281,10 @@
             return content.title; 
         }
       }, 
-      getUnder(content){
+      getUnder(content){        
+        if (!this.content){
+          return ''
+        }
         switch (content.type){
           case 'movie':
             if (content.year){              
@@ -274,6 +315,9 @@
         }
       },
       getImg (object) {
+        if (!this.content){
+          return ''
+        }
         var w = Math.round(this.fullwidth * 2)
         var h = Math.round(this.fullheight * 2)
         if (this.type == 'art'){          

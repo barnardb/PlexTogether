@@ -1,22 +1,17 @@
 <template>
     <span>
         <span v-on:click="reset()" style="cursor: pointer !important"> {{ library.title }} <span v-if="browsingContent"> > </span></span>        
-        <v-layout v-if="!contents && !browsingContent" row>
+        <v-layout v-if="!contents && shadowItems.length == 0" row>
             <v-flex xs12 style="position:relative">
                 <v-progress-circular style="left: 50%; top:50%" v-bind:size="60" indeterminate class="amber--text"></v-progress-circular>
             </v-flex>
         </v-layout>
-        <div v-if="!browsingContent && contents" class="mt-3">
+        <div v-if="!browsingContent && shadowItems.length > 0" class="mt-3">
           <v-layout class="row" row wrap>
-                <v-flex xs4 md3 xl1 lg2  class="pb-3" v-for="content in contents.MediaContainer.Metadata" :key="content">
-                  <plexthumb :content="content" :server="server" type="thumb"  @contentSet="setContent(content)"></plexthumb>
-                </v-flex>
-            </v-layout>  
-            <v-layout row>
-              <v-flex xs12 v-if="contents && !browsingContent && !stopNewContent" v-observe-visibility="getMoreContent" justify-center>
-                Loading...
-              </v-flex>  
-            </v-layout>   
+              <v-flex xs4 md3 xl1 lg2  class="pb-3" v-for="(content, index) in shadowItems" :key="content">
+                <plexthumb :index="index" :content="content" :server="server" type="thumb"  @contentSet="setContent(content)" @amVisible="wantContent(index)"></plexthumb>
+              </v-flex>
+          </v-layout>   
         </div>        
         <plexalbum v-if="browsingContent && browsingContent.type == 'album'" :content="browsingContent" :server="server"
                     :library="library"></plexalbum>
@@ -50,7 +45,6 @@
     created () {
       // Hit the PMS endpoing /library/sections
       var that = this
-      this.getMoreContent()
     },
     data () {
       return {
@@ -63,10 +57,14 @@
         busy: false,
         contents: null,
         status: "loading..",
-        searchPhrase: null
+        searchPhrase: null,
+
+        shadowItems: [],
+        wantedItems: {},
       }
     },
     mounted () {
+      this.getMoreContent(0)
     },
     beforeDestroy () {
 
@@ -77,7 +75,6 @@
         this.browsingContent = content
       },
       handler (component) {
-        console.log(component)
       },
       getThumb (object) {
         var w = Math.round(Math.max(document.documentElement.clientWidth, window.innerWidth || 0));
@@ -109,64 +106,59 @@
         }
         return movie.title
       },
-      filterItems: _.debounce(
-        function () {
-          for (let i = 0; i < this.contents.MediaContainer.Metadata.length; i++) {
-            let item = this.contents.MediaContainer.Metadata[i]
-            if (!this.searchPhrase) {
-              item.active = true
-              continue
-            }
-            if (item.title.toLowerCase().indexOf(this.searchPhrase.toLowerCase()) > -1) {
-              item.active = true
-            } else {
-              item.active = false
-            }
-          }
-        },
-        500
-      ),
-      getMoreContent () {
-        if (this.stopNewContent || this.busy) {
+      reset () {
+        this.browsingContent = false
+        this.setBackground()
+      },
+      wantContent: function (index) {
+        console.log('Wanted: ' + index)
+        this.wantedItems[index] = true
+        this.getMoreContent()
+      },
+      getMoreContent: function(){
+         if (this.stopNewContent || this.busy) {
           return
         }
-        console.log('We need to get more content!')
+        let index = 99999999
+        for (let i in this.wantedItems){
+          if (i < index){
+            index = i
+          }
+        }
+        if (index == 99999999){
+          index = 0
+          if (this.shadowItems[0]){
+            return
+          }
+        }
         var that = this
         this.busy = true
-        this.server.getLibraryContents(this.library.key, this.startingIndex, this.size, function (result) {
+        console.log('We need to get more content!')
+        console.log('Searchin at index: ' + index)
+        this.server.getLibraryContents(this.library.key, index, 100, (result) => {
           console.log('Metadata result', result)
-          if (result && result.MediaContainer && result.MediaContainer.Metadata) {
-            that.libraryTotalSize = result.MediaContainer.totalSize
-            that.startingIndex = that.startingIndex + 100
-            if (that.contents) {
-              for (let i = 0; i < result.MediaContainer.Metadata.length; i++) {
-                let media = result.MediaContainer.Metadata[i]
-                media.active = true
-                that.contents.MediaContainer.Metadata.push(media)
+          if (result && result.MediaContainer && result.MediaContainer.Metadata) {              
+            const startIndex = result.MediaContainer.offset
+            if (this.shadowItems.length == 0){
+              // First result
+              this.shadowItems = _.times(result.MediaContainer.totalSize, _.constant(null));
+            }                 
+            for (let i = 0; i < result.MediaContainer.Metadata.length; i++){
+              //console.log('Setting: ' + (startIndex + i))
+              this.shadowItems.splice(parseInt(startIndex + i), 1, result.MediaContainer.Metadata[i])
+              if (this.wantedItems[parseInt(startIndex + i)]){
+                delete this.wantedItems[parseInt(startIndex + i)]
               }
-            } else {
-              for (let i = 0; i < result.MediaContainer.Metadata.length; i++) {
-                let media = result.MediaContainer.Metadata[i]
-                media.active = true
-              }
-              that.contents = result
-              that.setBackground()
             }
-            if (result.MediaContainer.size < 100) {
-              that.stopNewContent = true
-            }
-
           } else {
             that.status = 'Error loading libraries!'
           }
           that.busy = false
+          this.getMoreContent()
         })
-      },
-      reset () {
-        this.browsingContent = false
-        this.setBackground()
       }
-
     }
+
+    
   }
 </script>
