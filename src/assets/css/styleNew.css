@@ -69,6 +69,12 @@ main {
 
 }
 
+html {
+    height: 100%;
+    background: #000;
+}
+
+
 .navigation-drawer {
 	background: #151924 !important;	
 }

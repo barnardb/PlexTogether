@@ -43,7 +43,7 @@
         fullheight: null,
         fullwidth: null,
         toptextheight: null,
-        bottomtextheight: null
+        bottomtextheight: null,
       }
     },
     mounted () {
@@ -58,9 +58,9 @@
       if (this.type == 'thumb'){
         VanillaTilt.init(this.$refs.root, {
           reverse:            true,  // reverse the tilt direction
-          max:                7,     // max tilt rotation (degrees)
+          max:                4,     // max tilt rotation (degrees)
           perspective:        1000,   // Transform perspective, the lower the more extreme the tilt gets.
-          scale:              1.01,      // 2 = 200%, 1.5 = 150%, etc..
+          scale:              1.03,      // 2 = 200%, 1.5 = 150%, etc..
           speed:              100,    // Speed of the enter/exit transition
           transition:         true,   // Set a transition on enter/exit.
           axis:               null,   // What axis should be disabled. Can be X or Y.
@@ -161,15 +161,15 @@
           return Math.round(this.height * 0.22) + 'em'
         }        
         if (!this.content){          
-          return Math.round(this.fullwidth * 1.5 * 0.22) + 'px'
+          return (Math.round(this.fullwidth * 1.5 * 0.22) + 1) + 'px'
         }
         if (this.content.type == 'movie'){
-          return Math.round((this.fullwidth * 1.5) * 0.22) + 'px'
+          return (Math.round((this.fullwidth * 1.5) * 0.22) + 1)  + 'px'
         }        
         if (this.content.type == 'episode'){
-          return Math.round(this.fullwidth * 0.7 * 0.22) + 'px'
+          return (Math.round(this.fullwidth * 0.7 * 0.22) + 1)  + 'px'
         }
-        return Math.round(this.fullwidth * 1.5 * 0.22) + 'px'
+        return (Math.round(this.fullwidth * 1.5 * 0.22) + 1)  + 'px'
       },
       showProgressBar (){
         if (!this.content){
@@ -248,9 +248,16 @@
       emitContentClicked (content) {
         this.$emit('contentSet',content)
       },
-      amVisible (){
+      amVisible (status){
+        if (!this.fullwidth){
+          return
+        }
         if (!this.content){
-          this.$emit('amVisible',this.index)
+          console.log(this.index,this.fullwidth,status)
+          if (status){
+            return this.$emit('amVisible',this.index)
+          }
+          return this.$emit('amNotVisible',this.index)
         }
       },
       getTitle(content){

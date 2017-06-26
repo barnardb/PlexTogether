@@ -6,10 +6,10 @@
                 <v-progress-circular style="left: 50%; top:50%" v-bind:size="60" indeterminate class="amber--text"></v-progress-circular>
             </v-flex>
         </v-layout>
-        <div v-if="!browsingContent && shadowItems.length > 0" class="mt-3">
+        <div v-if="!browsingContent && shadowItems.length > 0" class="mt-3" style="overflow-y:auto">
           <v-layout class="row" row wrap>
               <v-flex xs4 md3 xl1 lg2  class="pb-3" v-for="(content, index) in shadowItems" :key="content">
-                <plexthumb :index="index" :content="content" :server="server" type="thumb"  @contentSet="setContent(content)" @amVisible="wantContent(index)"></plexthumb>
+                <plexthumb :index="index" :content="content" :server="server" type="thumb"  @contentSet="setContent(content)" @amVisible="wantContent(index)" @amNotVisible="dontWantContent(index)"></plexthumb>
               </v-flex>
           </v-layout>   
         </div>        
@@ -92,14 +92,6 @@
         }
         this.$store.commit('SET_BACKGROUND',this.server.getUrlForLibraryLoc(url, w / 4, h / 4, 8))
       },
-      isShown (item) {
-        if (!item.active) {
-          return {
-            display: 'none'
-          }
-        }
-        return {}
-      },
       getTitleMovie(movie){
         if (movie.year){
           return movie.title + ' (' + movie.year + ')'
@@ -111,9 +103,13 @@
         this.setBackground()
       },
       wantContent: function (index) {
-        console.log('Wanted: ' + index)
+        //console.log('Do want: ' + index)
         this.wantedItems[index] = true
         this.getMoreContent()
+      },      
+      dontWantContent: function (index) {
+        //console.log('Dont want: ' + index)
+        delete this.wantedItems[index]
       },
       getMoreContent: function(){
          if (this.stopNewContent || this.busy) {
