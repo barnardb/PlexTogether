@@ -171,6 +171,12 @@ span {
 	border-radius: 0 0 5px 5px !important;
 }
 
+/* FIX Chat text not wrapping */
+
+.list__tile__sub-title, .list__tile__title {
+  text-wrap: normal;
+}
+
 
 
 /* PlexBrowser */
