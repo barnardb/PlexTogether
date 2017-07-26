@@ -149,12 +149,8 @@
                   <div class="pl-2">{{ media.videoResolution }}p {{ getDuration(media.duration)}}</div>
                   <div class="pl-4 soft-text" > 
                     <div>Video Codec: {{ media.videoCodec }} ({{ media.bitrate }}kbps) </div> 
-                    <div>
-                      Audio Streams: {{ audioStreams(media.Part[0].Stream) }}
-                    </div>
-                    <div>
-                      Subtitles: {{ subtitleStreams(media.Part[0].Stream) }}
-                    </div>
+                    <div>Audio Streams: {{ audioStreams(media.Part[0].Stream) }} </div>
+                    <div>Subtitles: {{ subtitleStreams(media.Part[0].Stream) }} </div>
                   </div>
                 </v-flex>                
                 <v-flex xs4>                  
@@ -167,8 +163,7 @@
           </v-card>
         </v-dialog>
         <span v-if="selectedItem">
-          <plexcontent v-if="selectedItem.type == 'episode' || selectedItem.type == 'movie'"
-                        :server="selectedItemServer" :content="selectedItem">
+          <plexcontent v-if="selectedItem.type == 'episode' || selectedItem.type == 'movie'" :server="selectedItemServer" :content="selectedItem">
           </plexcontent>
           <plexseason v-if="selectedItem.type == 'season'" :server="selectedItemServer" :content="selectedItem">
           </plexseason>
@@ -182,7 +177,6 @@
 
 <script>
   import plexserver from './plexserver'
-  import plexcontent from './plexcontent'
   import plexlibrary from './plexlibrary'
   import plexseason from './plexseason'
   import plexseries from './plexseries'
@@ -194,7 +188,6 @@
     props: ['library', 'server', 'content', 'nowPlaying', 'height'],
     components: {
       plexserver,
-      plexcontent,
       plexlibrary,
       plexseason,
       plexseries,

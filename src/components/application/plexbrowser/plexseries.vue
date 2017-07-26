@@ -57,7 +57,7 @@
               </v-flex>
           </v-layout>            
          
-        </div>
+        </div>      
         <plexseason v-if="browsingContent" :content="browsingContent" :server="server" :library="library"></plexseason>
     </span>
 </template>

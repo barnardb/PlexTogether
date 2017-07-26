@@ -1,15 +1,12 @@
 <template>
     <span>
-      <span v-on:click="reset()" style="cursor: pointer !important"> Season {{ content.index }}<span
-          v-if="browsingContent"> > </span> </span>
+      <span v-on:click="reset()" style="cursor: pointer !important"> Season {{ content.index }}<span v-if="browsingContent"> > </span> </span>
       <v-layout v-if="!contents && !browsingContent" row>
         <v-flex xs12 style="position:relative">
             <v-progress-circular style="left: 50%; top:50%" v-bind:size="60" indeterminate class="amber--text"></v-progress-circular>
         </v-flex>
       </v-layout>
       <div v-if="contents && !browsingContent" class="mt-3">   
-
-
           <v-flex xs12>
             <v-card class="darken-2 white--text" :img="getArtUrl">
               <v-container style="background: rgba(0, 0, 0, .8);"  class="pa-0 ma-0" fluid grid-list-lg>
@@ -41,21 +38,6 @@
               </v-container>                  
             </v-card>
           </v-flex>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <h4 class="mt-3"> Episodes </h4>
           <v-divider></v-divider>
           <div>          
@@ -66,24 +48,23 @@
             </v-layout>  
           </div>
         </div>
-        <plexcontent v-if="browsingContent && browsingContent.type != 'show'" :content="browsingContent"
-                     :server="server" :library="library"></plexcontent>
+        <plexcontent v-if="browsingContent && browsingContent.type != 'show'" :content="browsingContent" :server="server" :library="library"></plexcontent>
         <plexseries v-if="browsingContent && browsingContent.type == 'show'" :server="browsingContentServer" :content="browsingContent">
         </plexseries>
     </span>
 </template>
 
 <script>
-  import plexcontent from './plexcontent'
   import plexthumb from './plexthumb.vue'
   import plexseries from './plexseries'
+  import plexcontent from './plexcontent'
 
   export default {
     props: ['library', 'server', 'content'],
     components: {
-      plexcontent,
       plexthumb,
-      plexseries
+      plexseries,
+      plexcontent,
     },
     created () {
       // Hit the PMS endpoing /library/sections
@@ -141,6 +122,7 @@
     },
     methods: {
       setContent (content) {
+        console.log('Setting content')
         this.browsingContent = content
       },
       navigateTo (key){

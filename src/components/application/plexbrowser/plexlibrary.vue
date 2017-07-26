@@ -25,8 +25,9 @@
                     :library="library"></plexalbum>
         <plexartist v-if="browsingContent && browsingContent.type == 'artist'" :content="browsingContent" :server="server"
                     :library="library"></plexartist>
-        <plexcontent v-if="browsingContent && (browsingContent.type == 'movie' || browsingContent.type == 'series') " :content="browsingContent"
-                     :server="server" :library="library"></plexcontent>
+        <span v-if="browsingContent && (browsingContent.type == 'movie' || browsingContent.type == 'series')">
+          <plexcontent  :content="browsingContent" :server="server"></plexcontent>
+        </span>
         <plexseries v-if="browsingContent && browsingContent.type == 'show'" :content="browsingContent" :server="server"
                     :library="library"></plexseries>        
 
@@ -35,7 +36,6 @@
 
 <script>
   import plexcontent from './plexcontent'
-  console.log(plexcontent)
   import plexseries from './plexseries'  
   import plexalbum from './plexalbum'  
   import plexthumb from './plexthumb'
